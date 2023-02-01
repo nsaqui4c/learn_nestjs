@@ -39,6 +39,59 @@
   * Nextjs will take care of injection for us.
 
 ## Nestjs Pipes
+### npm i class-validator class-transformer
+
+* Pipes operates on the arguments to be processed by the route handler, just before the handler is called.
+* Pipes can perform data transformation or data validation.
+* Pipes can return data - either original or modified - which will be passed on to route handler
+* Pipes can throw exception. Exception thrown will be handled by Nestjs parse into error response.
+* Pipes can be asynchronus.
+
+#### Inbuilt Pipes
+* ValidationPipe
+* ParseIntPipe
+
+#### Custom Pipe implementation
+* Pipes are classes annotated with the @Injectable() decorator.
+* must implement the PipeTransform generic interface. => i.e must have transform method.
+  * this method will be called by nestjs to process the arguments.
+  * transform method accepts two parameters.
+    * value : the value of processed argument.
+    * metadata(optional) : object containing metadata about the argument.
+* Whatever is returned from transform() will be passed to the route handler.
+  * Exception will be sent back to client.
+
+#### Pipes can be consumed in different ways.
+* Global Pipes:
+  * defined at the application level.
+  * applied to any incoming request.
+  ```
+  async function bootstrap(){
+    const app = await NestFactory.create(ApplicationModule);
+    app.useGlobalPipes(SomePipe);
+    await app.listen(3000)
+  }
+  bootstrao();
+  ```
+* Haldler level pipes:
+  * defined at the handler level via @UsePipes()
+  * such pipe will process all the parameters for the incoming request.
+  ```
+  @Post()
+  @UsePipes(somePipe)
+  createTask(@Body() someBody ) {...}
+  ```
+* Parameter level pipes:
+  * defined at the parameter level
+  * will process only those parameters for which the pipe has been defined.
+  ```
+  @Post()
+  createTask(@Body('desc', somePipe) description ) {...}
+  ```
+### Error handling
+* Nestjs provide us with several inbulit error.
+* We just need to throw these errors and rest will be taken care by nestjs
+  * it will send the appropriate response to client.
 
 # Extra
 * Normally when we create constructor in a class we need to create the class variable and then assign the parameter to the class varibale.
