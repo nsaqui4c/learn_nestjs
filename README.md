@@ -7,6 +7,77 @@
 * To create new project 
   * nest new project name.
 
+#### Another way of installation
+* create folder
+* npm init -y
+* npm i @nestjs/common @nestjs/core @nestjs/platform-express reflect-metadata typescript
+    * @nestjs/common           ->    contains function classes that need from nest
+    * @nestjs/core 
+    * @nestjs/platform-express ->    let nest use express js for http request/ express adapter for nest
+       * express is default, we can also use fastify for http request,
+    * reflect-metadata         ->    helps make decorator works
+    * typescript
+* create and configure tsconfig.json
+  * below two are super important for nest to work:
+  *  "emitDecoratorMetadata": true,
+  *  "experimentalDecorators": true,
+```js
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "target": "es2017",
+  }
+}
+
+```
+* create entry point
+  * create folder src and fie main.ts
+  ```js
+  import {NestFactory} from '@nestjs/core'
+  import {AppModule} from './app.module'
+  async function bootstrap() {
+     const app = await NestFactory.create(AppModule)
+     await app.listen(3000)
+  }
+  bootstrap()
+  ```
+* create controller( app.controller.ts)
+  ```js
+  import {Controller. Get} from '@nestjs/common'
+
+  @Controller
+  export class AppController {
+    @Get()
+    getRootRoute(){
+      return 'hi there'
+    }
+  }
+  ```
+* Create Module (app.module.ts)
+```js
+import {Module} from '@nestjs/common'
+import {AppController} from './app.controller'
+
+@Module({
+  controllers:[AppController ]
+})
+class AppModule() {
+
+}
+
+```
+## Nest tools to write server functionality
+* Pipe        ->    Validate data contains in the request.
+* Guard       ->    Make sure the user in authenticated.
+* Controller  ->    Route the request to a particular function.
+* Service     ->    Run some business logic
+* Reposirtory ->    Access a database.
+* Modules     ->    Groups code together
+* Filters     ->    Handles error that occurs during request handling
+* Interceptors->    Add extra login to incoming/ougoing request/response.
+
 ## Controller
 * Defined by using @controller decorator
 * We need to define the path in bracket which this controller will control
@@ -16,7 +87,7 @@
 #### Getting value in POST request
 * we are sending
   * body with title and Description as key-
-```
+```js
   @Post()
   createTask(
     @Body() body,
@@ -65,7 +136,7 @@
 * Global Pipes:
   * defined at the application level.
   * applied to any incoming request.
-  ```
+  ```js
   async function bootstrap(){
     const app = await NestFactory.create(ApplicationModule);
     app.useGlobalPipes(SomePipe);
@@ -76,7 +147,7 @@
 * Haldler level pipes:
   * defined at the handler level via @UsePipes()
   * such pipe will process all the parameters for the incoming request.
-  ```
+  ```js
   @Post()
   @UsePipes(somePipe)
   createTask(@Body() someBody ) {...}
@@ -84,7 +155,7 @@
 * Parameter level pipes:
   * defined at the parameter level
   * will process only those parameters for which the pipe has been defined.
-  ```
+  ```js
   @Post()
   createTask(@Body('desc', somePipe) description ) {...}
   ```
@@ -95,7 +166,7 @@
 
 # Extra
 * Normally when we create constructor in a class we need to create the class variable and then assign the parameter to the class varibale.
-```
+```js
 @Controller('tasks')
 export class TasksController {
   taskService: TasksService    // defining class var
@@ -108,7 +179,7 @@ function a(){
 ```
 * But we can by pass decalaring of the variable by assigning accessor in constructor
 * ts will understand that since this is private/public this must be property of class and compile in such a manner.
-```
+```js
 @Controller('tasks')
 export class TasksController {
   
@@ -124,7 +195,7 @@ function a(){
 * use to encapsulate data and send it to another system.
 * Does not have any behavior except for storage, retrieval, serilization and deserilization of its own data.
 * can be usefull for data validation.
-```
+```js
 //DTO CLASS
 export class CreateTaskDto {
   title: string;

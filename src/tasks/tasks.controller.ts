@@ -11,7 +11,7 @@ import {
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskFilterDto } from './dto/filter-task.dto';
 import { TaskStatusDto } from './dto/task-status,.dto';
-import { Task, TaskStatus } from './task.model';
+import { Task } from './task.model';
 import { TasksService } from './tasks.service';
 
 @Controller('tasks')
