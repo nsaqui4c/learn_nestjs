@@ -224,6 +224,7 @@ export class CreateTaskDto {
 
 ## CLI 
 * nest new projectName
+* SWITCH TO SRC DIRECTORY
 * nest g module moduleName
   * this will create folder with moduleName and create file modulename.module.ts
 * nest g controller cName --no-spec
