@@ -100,6 +100,8 @@ class AppModule() {
   }
 }
 ```
+![nestjs-req-params](https://user-images.githubusercontent.com/45531263/218913381-a7f71daa-f252-4399-89f1-2ae0e50c3ca0.png)
+
 
 ## Providers and Services
 * Providers can be injected into constructor if decorated as an @Injectable, via dependency injection.
