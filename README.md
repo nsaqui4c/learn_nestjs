@@ -242,6 +242,22 @@ export class User {
  * "emitDecoratorMetadata": true,
  * "experimentalDecorators": true,
 * This will create extra function containing metadata to preserve the type and validation
+```js
+## TS FILE
+ @Post()
+  createMessage(@Body() body: CreateMessageDto) {
+    return body;
+  }
+  
+## CONVERTED JS FILE
+__decorate([
+    (0, common_1.Post)(),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_message_dto_1.CreateMessageDto]),
+    __metadata("design:returntype", void 0)
+], MessagesController.prototype, "createMessage", null);
+```
 ### Error handling
 * Nestjs provide us with several inbulit error.
 * We just need to throw these errors and rest will be taken care by nestjs
