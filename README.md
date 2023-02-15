@@ -102,7 +102,9 @@ class AppModule() {
 ```
 ![nestjs-req-params](https://user-images.githubusercontent.com/45531263/218913381-a7f71daa-f252-4399-89f1-2ae0e50c3ca0.png)
 
-
+* @Controller           -> class decorator
+* @Get @Post etc        -> Method decorator
+* @Body @Params         -> Argument Decorator
 ## Providers and Services
 * Providers can be injected into constructor if decorated as an @Injectable, via dependency injection.
 * Not all providers are services.
@@ -112,6 +114,35 @@ class AppModule() {
   * Nextjs will take care of injection for us.
 
 ## Nestjs Pipes
+### setting up automatic validation
+* Tell nest js to use global validation
+```
+async function bootstrap() {
+  const app = await NestFactory.create(MessagesModule);
+  app.useGlobalPipes(new ValidationPipe());   //Global Validation
+  await app.listen(3000);
+}
+bootstrap();
+```
+* Create data transfer Object (DTO) and Validation rules
+```
+import { IsString } from 'class-validator';
+
+export class CreateMessageDto {
+  @IsString()  //Validation rules
+  content: string;
+  @IsOptional()
+  extra?: string
+}
+```
+* Apply Dto to request handler
+```
+  @Post()
+  createMessage(@Body() body: CreateMessageDto) {
+    return body;
+  }
+
+```
 ### npm i class-validator class-transformer
 
 * Pipes operates on the arguments to be processed by the route handler, just before the handler is called.
@@ -119,6 +150,50 @@ class AppModule() {
 * Pipes can return data - either original or modified - which will be passed on to route handler
 * Pipes can throw exception. Exception thrown will be handled by Nestjs parse into error response.
 * Pipes can be asynchronus.
+
+#### class transformer
+* Transform plain object to class (constructor) objects -> create instance of the class with the plain object value
+```
+[
+  {
+    "id": 1,
+    "firstName": "Johny",
+    "lastName": "Cage",
+    "age": 27
+  },
+  {
+    "id": 2,
+    "firstName": "Ismoil",
+    "lastName": "Somoni",
+    "age": 50
+  },
+  {
+    "id": 3,
+    "firstName": "Luke",
+    "lastName": "Dacascos",
+    "age": 12
+  }
+]
+
+## TRANSFOR TO CLASS OBJECT
+
+export class User {
+  id: number;
+  firstName: string;
+  lastName: string;
+  age: number;
+
+  getName() {
+    return this.firstName + ' ' + this.lastName;
+  }
+
+  isAdult() {
+    return this.age > 36 && this.age < 60;
+  }
+}
+```
+
+![validationPipe](https://user-images.githubusercontent.com/45531263/218943995-cb4a165a-6fe4-48f3-9be7-b44442ac2b64.png)
 
 #### Inbuilt Pipes
 * ValidationPipe
@@ -161,6 +236,12 @@ class AppModule() {
   @Post()
   createTask(@Body('desc', somePipe) description ) {...}
   ```
+#### How does the js conserve the type of request??
+* createMessage(@Body() body: CreateMessageDto)
+* In the tsconfig file we have we have added 
+ * "emitDecoratorMetadata": true,
+ * "experimentalDecorators": true,
+* This will create extra function containing metadata to preserve the type and validation
 ### Error handling
 * Nestjs provide us with several inbulit error.
 * We just need to throw these errors and rest will be taken care by nestjs
