@@ -258,6 +258,12 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], MessagesController.prototype, "createMessage", null);
 ```
+### Services and Repositories
+![Repositories](https://user-images.githubusercontent.com/45531263/218958059-b0d9b905-41e2-4ada-917d-bf460f8ff1e9.png)
+
+* Implementing Repository
+ * create messages.repository.ts
+ * create class MessageRepository
 ### Error handling
 * Nestjs provide us with several inbulit error.
 * We just need to throw these errors and rest will be taken care by nestjs
