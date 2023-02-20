@@ -68,6 +68,37 @@ class AppModule() {
 }
 
 ```
+## Dependency Injection (DI) in Nestjs
+* Normally we have three class with DI
+ * controller depend upon service
+ * service depends upon repository
+* In normal coding if we want to initialize controller we have to write below 3 lines to implememt Inversion of control
+ * In complex application there might be more dependecies then just 1 service and 1 repository.
+```js
+const repo = new MessageRepository();
+const service = new MessageService(repo);
+const controller = new MessageController(service);
+```
+* To solve this we have technique of dependency Injection.
+* Nest has DI Container which create all the dependncies for us
+* To make class available for DI we need to add @Injectable on those classes.
+ * This will make the class available in Nest DI container.
+* Now we need to add these classes in providers list in module class.
+ * providers -> things that can be used as dependencies for other classes.
+
+![DI Container Flow](https://user-images.githubusercontent.com/45531263/220081855-0a7f6ba9-13ce-48ae-8256-2244967fda7a.png)
+
+#### providers are singleton i.e DI Container will create only one instance of injectable class and share the same instances.
+```js
+export class MessageService {
+ constructor(public msgRepo : MessageRepository,msgRepo2 : MessageRepository){
+  console.log(msgRepo===msgRepo2)  // true
+  // even though we have asked for 2 instance, DI will provide the same instance twice.
+ }
+}
+```
+
+
 ## Nest tools to write server functionality
 * Pipe        ->    Validate data contains in the request.
 * Guard       ->    Make sure the user in authenticated.
