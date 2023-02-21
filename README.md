@@ -358,6 +358,157 @@ export class CreateTaskDto {
   }
   ```
 
+## UNIT TESTING
+* For unit testing Nest application first we need to mock all the the dependencies a service is using.
+* For that we need to create DI container. for test we create container using below syntax.
+```js
+   import { AuthService } from './auth.service';
+   it('can create instance of auth service' , async()=>{
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        ],
+    }).compile();
+   }
+```
+* In case we do not want to pass the real service but the fake one, we can do it as below:
+ * while faking, we do need to create full class, but jsut the function which are being are required.
+ * Partial<UserService> is used to define type in case of partial fake class.
+```js
+import { Test } from '@nestjs/testing';
+import { AuthService } from './auth.service';
+import { UsersService } from './users.service';
+
+  it('can create instance of auth service' , async()=>{
+  
+  // Create a fake copy of the users service
+    const users: User[] = [];
+    fakeUsersService: Partial<UserService> = {    // type script the partial shape of class
+      find: (email: string) => {
+        const filteredUsers = users.filter((user) => user.email === email);
+        return Promise.resolve(filteredUsers);
+      },
+      create: (email: string, password: string) => {
+        const user = {
+          id: Math.floor(Math.random() * 999999),
+          email,
+          password,
+        } as User;         // forced type scripting
+        users.push(user);
+        return Promise.resolve(user);
+      },
+    };
+  
+    const module = await Test.createTestingModule({
+      providers: [
+        AuthService,
+        {
+          provide: UsersService,
+          useValue: fakeUsersService, //contains some function of UserService hence typescript it with Partial
+        },
+      ],
+    }).compile();
+
+    service = module.get(AuthService);
+  });
+}
+```
+* Testing of error 
+ ```js
+   it('throws an error if user signs up with email that is in use', async () => {
+    fakeUsersService.find = () =>
+ 
+      Promise.resolve([{ id: 1, email: 'a', password: '1' } as User]);
+    await expect(service.signup('asdf@asdf.com', 'asdf')).rejects.toThrow(
+      BadRequestException,
+    );
+  });
+```
+
+ #### Another Way of mocking function in fake service or repo
+ * Jest provide us with jest.fn() which has multiple tools to help us mock function
+ ```js
+ const fakeTaskRepository = () => ({
+  getTasks: jest.fn();      // instead of defining function and return some value
+                            // we marked it as jest function
+ })
+ 
+ describe('get tasks' , async ()=>{
+ fakeTaskRepository.getTasks.mockResolvedValue('some Value');
+ const result = taskService.getTasks()   // service is going to call repo.getTask func
+                                        // but repo will respond with mock value from above line.
+ expect(result).toEqual('some Value');
+ }) 
+ ```
+ 
+ * full code of above snippet
+ ```js
+ import { NotFoundException } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import { TaskStatus } from './task-status.enum';
+import { TasksRepository } from './tasks.repository';
+import { TasksService } from './tasks.service';
+
+const mockTasksRepository = () => ({
+  getTasks: jest.fn(),
+  findOne: jest.fn(),
+});
+
+const mockUser = {
+  username: 'Ariel',
+  id: 'someId',
+  password: 'somePassword',
+  tasks: [],
+};
+
+describe('TasksService', () => {
+  let tasksService: TasksService;
+  let tasksRepository;
+
+  beforeEach(async () => {
+    const module = await Test.createTestingModule({
+      providers: [
+        TasksService,
+        { provide: TasksRepository, useFactory: mockTasksRepository },
+      ],
+    }).compile();
+
+    tasksService = module.get(TasksService);
+    tasksRepository = module.get(TasksRepository);
+  });
+
+  describe('getTasks', () => {
+    it('calls TasksRepository.getTasks and returns the result', async () => {
+      tasksRepository.getTasks.mockResolvedValue('someValue');
+      const result = await tasksService.getTasks(null, mockUser);
+      expect(result).toEqual('someValue');
+    });
+  });
+
+  describe('getTaskById', () => {
+    it('calls TasksRepository.findOne and returns the result', async () => {
+      const mockTask = {
+        title: 'Test title',
+        description: 'Test desc',
+        id: 'someId',
+        status: TaskStatus.OPEN,
+      };
+
+      tasksRepository.findOne.mockResolvedValue(mockTask);
+      const result = await tasksService.getTaskById('someId', mockUser);
+      expect(result).toEqual(mockTask);
+    });
+
+    it('calls TasksRepository.findOne and handles an error', async () => {
+      tasksRepository.findOne.mockResolvedValue(null);
+      expect(tasksService.getTaskById('someId', mockUser)).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
+});
+ ```
+
 ## CLI 
 * nest new projectName
 * SWITCH TO SRC DIRECTORY
