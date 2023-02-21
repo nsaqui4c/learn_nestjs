@@ -508,7 +508,10 @@ describe('TasksService', () => {
   });
 });
  ```
-
+* We can also use jest.spyOn to mock response from any function
+```js
+jest.spyOn(tasksRepository, "getTasks").mockResolvedValue("Some values");
+```        
 ## CLI 
 * nest new projectName
 * SWITCH TO SRC DIRECTORY
