@@ -511,7 +511,25 @@ describe('TasksService', () => {
 * We can also use jest.spyOn to mock response from any function
 ```js
 jest.spyOn(tasksRepository, "getTasks").mockResolvedValue("Some values");
-```        
+``` 
+ 
+#### Testing callback function
+ * expect.hasAssertions() -> verifies that at least one assertion is called during a test
+ * expect.assertions(number) -> verifies that a certain number of assertions are called during a test.
+ ```js
+ test('doAsync calls both callbacks', () => {
+  expect.assertions(2);      // in case of async call back and we need to wait for 2 callbacks
+  function callback1(data) {
+    expect(data).toBeTruthy();
+  }
+  function callback2(data) {
+    expect(data).toBeTruthy();
+  }
+
+  doAsync(callback1, callback2);
+});
+```
+ 
 ## CLI 
 * nest new projectName
 * SWITCH TO SRC DIRECTORY
