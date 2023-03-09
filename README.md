@@ -335,7 +335,8 @@ async_updatecourse(
  }
 ```
 * We can apply it to whole controller by using @UseFilters(new HttpException Filter()) at controller level
-* To apply it globally inmain.ts 
+* To apply it globally in main.ts 
+
 ```js
 async function bootstrap() {
   const app = await Nest Facto ry.create(AppModule);
@@ -345,6 +346,40 @@ async function bootstrap() {
  }
 bootstrap();
 ```
+
+#### Custom fallback exception handler
+* Normally in case of any unhandeled exception Nestjs will throw 500 internal server error without the exact error.
+* To override this we need to implement our own fallback exception handler.
+
+```js
+@Catch()  // without any argument to catch all exception if not catch earlier
+export class FallbackException Filter implements ExceptionFilter{
+  catch (exception: any, host: Argument sHost)
+  console. log("fallback exception handler triggered",
+  JSON. stringify (exception));
+  const ctx = host.switchToHttp (),
+  response= ctx.get Response 0;
+  return response. status (500) . json ({
+    Statuscode: 500,
+    createdBy : "FallbackExceptionFilter",
+    errorMessage: exception. message ? exception. message   // sending exact error message
+     "Unexpected error ocurred"
+    })
+  }
+}
+// Implementing it globally
+async function bootstrap () {
+ const app = await NestFactory.create (AppModule) ;
+ app.setGlobalPrefix( "api");
+ app.useG lobalFilters (
+ new FallbackExceptionFilter(),
+ new HttpExceptionFilter ());
+ await app. listen (9000);
+}
+ bootstrap();
+
+```
+
 
 
 # Extra
