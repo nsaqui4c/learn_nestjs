@@ -300,6 +300,53 @@ __decorate([
 * We just need to throw these errors and rest will be taken care by nestjs
   * it will send the appropriate response to client.
 
+#### Custom Exception filter
+```js
+import{ArgumentsHost, Catch, ExceptionFilter, HttpException} from @
+
+@Catch (HttpException)  //overriding response for HttpException only
+export class HttpExceptionFilter implements ExceptionFilter {
+ catch (exception: HttpException, host: ArgumentsHost) {
+  console. log ( "HTTP exception handler triggered", JSON. stringify(exception));
+  const ctx = host. switchToHttp();
+  const response = ctx. getResponse(),
+  request = ctx.get Request (),
+  statusCode = exception.getStatus ();
+
+  return response. status (statusCode).json({
+   status: statusCode,
+   createdBy: "HttpExceptionFilter",
+   errorMessage: exCeption. message. message
+  })
+ }
+}
+
+///////////////////////////////////////////////////
+// Applying the filter to specific request
+@Put(' courseId')
+@UseFilters (new HttpException Filter())  // using the custom filter for this verb
+async_updatecourse(
+@Param("courseId") courseId: string,
+@Body() changes: Partial<Course>):Promise<Course> {
+ console. log ( "updating course");
+ if (changes._id) {
+ throw new BadRequestException ("Can't update course id")  //BadRequestException is sub class for HttpException
+ return this.coursesDB. updateCourse (COurseld, changes)
+ }
+```
+* We can apply it to whole controller by using @UseFilters(new HttpException Filter()) at controller level
+* To apply it globally inmain.ts 
+```js
+async function bootstrap() {
+  const app = await Nest Facto ry.create(AppModule);
+  app.setGlobalPrefix ("api");
+  app.useGlobalFilters(new HttpExceptionFilter());  //Applying Globally
+  await app. listen (9000);
+ }
+bootstrap();
+```
+
+
 # Extra
 * Normally when we create constructor in a class we need to create the class variable and then assign the parameter to the class varibale.
 ```js
