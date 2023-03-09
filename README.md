@@ -174,6 +174,7 @@ export class CreateMessageDto {
   }
 
 ```
+
 ### npm i class-validator class-transformer
 
 * Pipes operates on the arguments to be processed by the route handler, just before the handler is called.
@@ -239,6 +240,21 @@ export class User {
     * metadata(optional) : object containing metadata about the argument.
 * Whatever is returned from transform() will be passed to the route handler.
   * Exception will be sent back to client.
+
+#### Custom pipe for validation and transformation
+* To transform the string to number. Similar to inbuilt ParseIntPipe
+```js
+
+export class ToIntegerPipe implements PipeTrans form<string>{
+ transform (value: string, metadata: Argumen tMetadata): number{  // abstract method
+   const val = parseInt (value);                                  // transformation
+   if (isNaN(val)
+    throw new BadRequestException('conversion to number failed' value);  //validation
+  return val;
+  }
+}  
+
+```
 
 #### Pipes can be consumed in different ways.
 * Global Pipes:
@@ -379,6 +395,74 @@ async function bootstrap () {
  bootstrap();
 
 ```
+#### Creating new Exception type and Validation exception handler
+* for sending new error message in case of class validator error.
+* In case name is not string in request it will <b>BadRequestException</b>.
+  * We want to modify the response of the exception
+```js
+class dto{
+@IsString()
+let name:string
+```
+* First create our new Exception class
+```js
+//validation.exception file
+import BadRequestException} from '@nestjs/common';
+export class ValidationException extends BadRequest Exception
+ constructor(public validationErrors: string[] ) {
+ super();
+}
+```
+
+* We need to create our filter class which will accept the errors and send the response.
+```js
+//class validation.filter.ts
+import {ArgumentsHost , ExceptionFilterf from "@nestjs/common'
+import {ValidationException} from ./validation.exception'
+
+@Catch(ValidationException)
+export class ValidationFilter implements Exception Filter {
+catch(exception: ValidationException , host: ArgumentsHost) : any {
+  const ctx = host. switchToHttp(),
+  response = ctx.getResponse();|
+  return response.status (400).json({
+  statusCode:400,
+  createdBy: "Validation Filter",
+  validationErrors : exception.validationErrors
+  })
+ }
+}
+```
+* Now we need to define this new exception filter to main.ts 
+* <b>filter should in the sequence of generic to specific</b>
+ * along with pipe to get the messages from class validator and join them together and pass to filter
+```js
+async function bootstrap (){
+ const app = await NestFactory.create (AppModule) ;
+ app.setGlobalPrefix("api");
+ app. useGlobalFilters(
+   new FallbackExceptionFilter(),
+   new HttpExceptionFilter(),
+   new ValidationFilter()
+   //filter should in the sequence of generic to specific
+   );
+   
+app.usedGlobalPipes (new ValidationPipe({
+      skipMissingProperties: true,
+      exceptionFactory: (errors: ValidationError [] ) =>{    // receiving validation errors from class validator
+         const messages = errors. map(
+            error => `${error.property} has wrong value${error.value}
+                     ${object.values (error.constraints).join(", ')}   // joining all the error from single variable
+                     )
+         return new ValidationException(messages)
+        }
+      }));
+      
+await app. listen (9000) ;
+bootstrap ()
+
+```
+
 
 
 
