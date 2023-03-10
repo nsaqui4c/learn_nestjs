@@ -470,7 +470,36 @@ export class AdminGuard extends AuthorizationGuard{
   }
 
 ```
+### Interceptor
+* It can intercept request after guard and before reaching controller OR just before the response is being sent out
+* Sample Code
+```js
+import {
+  NestInterceptor,
+  Injectable,
+  CallHandler,
+  ExecutionContext,
+} from '@nestjs/common';
+import { Observable, map } from 'rxjs';
 
+@Injectable()
+export class TestInterceptor implements NestInterceptor {
+  intercept(
+    context: ExecutionContext,
+    next: CallHandler<any>,
+  ): Observable<any> | Promise<Observable<any>> {
+    // This part of the code will run before the request hit controller
+    console.log('I am running before controller');
+
+    return next.handle().pipe(
+      map((data: any) => {
+        //Running before the response is sent out
+        console.log('I am running just before the response is sent out');
+      }),
+    );
+  }
+}
+```
 
 ### Error handling
 * Nestjs provide us with several inbulit error.
