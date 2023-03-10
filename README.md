@@ -495,6 +495,7 @@ export class TestInterceptor implements NestInterceptor {
       map((data: any) => {
         //Running before the response is sent out
         console.log('I am running just before the response is sent out');
+        return({data, message:'data after the interceptor'})
       }),
     );
   }

@@ -7,17 +7,23 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common';
+import { AuthGuard } from './authorization.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { TaskFilterDto } from './dto/filter-task.dto';
 import { TaskStatusDto } from './dto/task-status,.dto';
 import { Task } from './task.model';
 import { TasksService } from './tasks.service';
+import { TestInterceptor } from './test.interceptor';
 
 @Controller('tasks')
 export class TasksController {
   constructor(private taskService: TasksService) {}
   @Get()
+  @UseGuards(new AuthGuard(['admin', 'user']))
+  @UseInterceptors(TestInterceptor)
   getTasks(@Query() taskFilterDto: TaskFilterDto): Task[] {
     console.log('Inside getTask Handler');
     if (Object.keys(taskFilterDto).length > 0) {
