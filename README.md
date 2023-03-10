@@ -364,6 +364,108 @@ export class AppModule implements NestModule {   // needs to implement nestModul
 ```
 
 ### NestJS Guards
+* Executes after all the middleware are finished executing and jsut before execution of controller
+* below code in in continuation of middleware from above.
+ * we have let the request move to next step eventhough JWT token was not present in req.
+ * This guard will be added to only those endpoint which requires JWT to access.
+ 
+ ##### Authentication Guard
+```js
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+@Injectable()
+export class AuthenticatichGuard implements CanActivate {
+  canActivate(context: ExecutionContext): boolean {
+    const host = context.switchToHttp(),
+      request = host.getRequest();
+    const user = request["user"];
+    if (!user){
+    console.log("User not authenticated, denying access");
+    throw new UnauthorizedException();
+    }
+    
+    console.log("User is authenticated, allowing access ");
+    return true;
+  }
+}
+```
+* Method level implementation of guard
+```js
+@Get()
+@UseGuards(Authentication Guard)
+async findAlLCourses (): Promise<Course []> {
+return this.coursesDB. findAll();
+```
+##### Authrization Guard
+```js
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from "@nestjs/common";
+import { Observable } from "rxjs";
+
+@Injectable()
+export class AuthorizationGuard implements CanActivate {
+  constructor(private allowedRoles:string[]){}
+  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {    
+    const ctx = context.switchToHttp()
+    const req = ctx.getRequest;
+
+    const user = req["user"]
+    const allowed = this.isAllowed(user.roles) 
+
+    if(!allowed){
+      console.log("USER is not authorized")
+      throw new ForbiddenException()
+    }
+
+    console.log("User is authorized")
+    return true
+  }
+
+  isAllowed(roles:string[]):boolean{
+    let allowed = false;
+    roles.forEach(role => {
+      if (this.allowedRoles.includes(role)){
+        allowed = true
+      }      
+    });
+
+    return allowed
+
+  }
+}
+```
+* Now we can implement it in two ways:
+  * creating new instance and passing the value
+```js
+ @Get()
+  @UseGuards(new AuthorizationGuard(['admin', 'user']))             // new instance of guard and passing the list as argument
+  getTasks(@Query() taskFilterDto: TaskFilterDto): Task[] {
+    console.log('Inside getTask Handler');
+    if (Object.keys(taskFilterDto).length > 0) {
+      return this.taskService.getFilterTask(taskFilterDto);
+    }
+    return this.taskService.getAllTasks();
+  }
+```
+  * creating subclass and calling the subclass in @Useguard
+```js
+@Injectable()
+export class AdminGuard extends AuthorizationGuard{
+ constructor(){
+   super( ["ADMIN" ]);    // passing the argument here
+   }
+}
+////////////////////////////////////////
+
+@Get()
+  @UseGuards(AdminGuard)                        // passing subclass which eventually call the class with the parameter
+  getTasks(@Query() taskFilterDto: TaskFilterDto): Task[] {
+    console.log('Inside getTask Handler');
+    if (Object.keys(taskFilterDto).length > 0) {
+      return this.taskService.getFilterTask(taskFilterDto);
+    }
+    return this.taskService.getAllTasks();
+  }
+
+```
 
 
 ### Error handling
